@@ -34,7 +34,8 @@ namespace TemHum
             }
             else
             {
-                Console.WriteLine("해당 포트가 없습니다.");
+                Console.WriteLine("해당 포트가 없습니다. 아무 키나 누르세요.");
+                Console.ReadKey();
             }
         }
 
@@ -57,7 +58,8 @@ namespace TemHum
             }
             else
             {
-                Console.WriteLine("포트가 열리지 않았습니다.");
+                Console.WriteLine("포트가 열리지 않았습니다. 아무 키나 누르세요.");
+                Console.ReadKey();
             }
             SerialPort.Close();
         }
