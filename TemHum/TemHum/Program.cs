@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.IO.Ports;
 using System.Threading;
 using System.Globalization;
+using System.Linq;
 
 namespace TemHum
 {
@@ -11,18 +12,13 @@ namespace TemHum
         static void Main(string[] args)
         {
             SerialPort SP = new SerialPort();
-            SP.PortName = "COM5";
-            SP.BaudRate = 9600;
-            SP.DataBits = 8;
-            SP.StopBits = StopBits.One;
-            SP.Parity = Parity.None;
-            SP.Handshake = Handshake.None;
-            SP.RtsEnable = true;
+            var isOpen = SerialSetting(SP);
+
             SP.Close();
             SP.Open();
-                                    
-            bool open = SP.IsOpen;
-            if (open)
+
+            isOpen = SP.IsOpen;
+            if (isOpen)
             {                   
                 while (true)
                 {
@@ -40,6 +36,25 @@ namespace TemHum
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             SP.Close();
+        }
+
+        public static bool SerialSetting(SerialPort serialPort)
+        {
+            var portNum = 0;
+            Console.Write("포트 번호를 입력하세요: COM");          
+            int.TryParse(Console.ReadLine(), out portNum);
+
+            serialPort.PortName = "COM" + portNum;
+            serialPort.BaudRate = 9600;
+            serialPort.DataBits = 8;
+            serialPort.StopBits = StopBits.One;
+            serialPort.Parity = Parity.None;
+            serialPort.Handshake = Handshake.None;
+            serialPort.RtsEnable = true;
+
+            var portCheck = SerialPort.GetPortNames();           
+            var checkPort = portCheck.Contains(serialPort.PortName);
+            return checkPort;
         }
 
         public static void PrintTemHum(string item)
