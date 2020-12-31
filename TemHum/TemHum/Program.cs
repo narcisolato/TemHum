@@ -13,20 +13,20 @@ namespace TemHum
         {
             var temHum = new TemHum();
             temHum.OpenSerial();
-
-            Console.WriteLine("아무 키나 누르세요...");
-            Console.ReadKey();           
+            temHum.ReadData();
         }
     }
 
     class TemHum
     {
         private static SerialPort SerialPort;
-
+        public bool isOpen { get; private set; }
+        
         public void OpenSerial()
         {
             SerialPort = new SerialPort();
-            var isOpen = SetSerialPort(SerialPort);
+            isOpen = SetSerialPort();
+
             if (isOpen)
             {
                 SerialPort.Close();
@@ -34,9 +34,12 @@ namespace TemHum
             }
             else
             {
-                Console.WriteLine("포트가 없습니다.");
+                Console.WriteLine("해당 포트가 없습니다.");
             }
+        }
 
+        public void ReadData()
+        {
             isOpen = SerialPort.IsOpen;
             if (isOpen)
             {
@@ -58,26 +61,26 @@ namespace TemHum
             }
             SerialPort.Close();
         }
-
-        private static bool SetSerialPort(SerialPort serialPort)
+        
+        private bool SetSerialPort()
         {
             Console.Write("포트 번호를 입력하세요: COM");
             int.TryParse(Console.ReadLine(), out int portNum);
 
-            serialPort.PortName = "COM" + portNum;
-            serialPort.BaudRate = 9600;
-            serialPort.DataBits = 8;
-            serialPort.StopBits = StopBits.One;
-            serialPort.Parity = Parity.None;
-            serialPort.Handshake = Handshake.None;
-            serialPort.RtsEnable = true;
+            SerialPort.PortName = "COM" + portNum;
+            SerialPort.BaudRate = 9600;
+            SerialPort.DataBits = 8;
+            SerialPort.StopBits = StopBits.One;
+            SerialPort.Parity = Parity.None;
+            SerialPort.Handshake = Handshake.None;
+            SerialPort.RtsEnable = true;
 
             var portCheck = SerialPort.GetPortNames();
-            var checkPort = portCheck.Contains(serialPort.PortName);
+            var checkPort = portCheck.Contains(SerialPort.PortName);
             return checkPort;
         }
 
-        private static void PrintTemHum(string item)
+        private void PrintTemHum(string item)
         {
             string temp = item.Substring(11, 4);
             string humi = item.Substring(7, 4);
