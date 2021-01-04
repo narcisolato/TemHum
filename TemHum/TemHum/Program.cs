@@ -37,7 +37,8 @@ namespace TemHum
                 {
                     var ReadDataTimer = new System.Timers.Timer();
                     ReadDataTimer.Interval = interval;
-                    ReadDataTimer.Elapsed += new System.Timers.ElapsedEventHandler(ReadData);
+                    //ReadDataTimer.Elapsed += new System.Timers.ElapsedEventHandler(ReadDataEvent);
+                    ReadDataTimer.Elapsed += ReadDataEvent;
                     ReadDataTimer.Start();
                 }
             }
@@ -52,7 +53,7 @@ namespace TemHum
             SerialPort.Close();
         }
         
-        public void ReadData(object sender, EventArgs e)
+        public void ReadDataEvent(object sender, EventArgs e)
         {
             isOpen = SerialPort.IsOpen;
             if (isOpen)
