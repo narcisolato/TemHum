@@ -12,8 +12,7 @@ namespace TemHum
         static void Main(string[] args)
         {
             var temHum = new TemHum();
-            temHum.OpenSerial();
-            temHum.ReadData();
+            temHum.OpenSerial();          
         }
     }
 
@@ -21,6 +20,7 @@ namespace TemHum
     {
         private static SerialPort SerialPort;
         public bool isOpen { get; private set; }
+        public int interval { get; set; } = 50;
         
         public void OpenSerial()
         {
@@ -31,43 +31,55 @@ namespace TemHum
             {
                 SerialPort.Close();
                 SerialPort.Open();
-            }
-            else
-            {
-                Console.WriteLine("해당 포트가 없습니다. 아무 키나 누르세요.");
-                Console.ReadKey();
-            }
-        }
 
-        public void ReadData()
-        {
-            isOpen = SerialPort.IsOpen;
-            if (isOpen)
-            {
-                while (true)
+                isOpen = SerialPort.IsOpen;
+                if (isOpen)
                 {
-                    string sendMsg = ":80040004000375\r\n";
-                    SerialPort.Write(sendMsg);
-                    Thread.Sleep(500);
-                    string data = SerialPort.ReadExisting();
-                    if (data != string.Empty)
-                    {
-                        PrintTemHum(data);
-                    }
+                    var ReadDataTimer = new System.Timers.Timer();
+                    ReadDataTimer.Interval = interval;
+                    ReadDataTimer.Elapsed += new System.Timers.ElapsedEventHandler(ReadData);
+                    ReadDataTimer.Start();
                 }
             }
             else
             {
-                Console.WriteLine("포트가 열리지 않았습니다. 아무 키나 누르세요.");
-                Console.ReadKey();
+                Console.WriteLine("해당 포트가 없습니다.");               
             }
+
+            Console.WriteLine("종료하려면 아무 키나 누르세요.");
+            Console.WriteLine("");
+            Console.ReadKey();
             SerialPort.Close();
         }
         
+        public void ReadData(object sender, EventArgs e)
+        {
+            isOpen = SerialPort.IsOpen;
+            if (isOpen)
+            {                
+                string sendMsg = ":80040004000375\r\n";
+                SerialPort.Write(sendMsg);
+                Thread.Sleep(50);
+                string data = SerialPort.ReadExisting();
+                if (data != string.Empty)
+                {
+                    PrintTemHum(data);
+                }
+                else
+                {
+                    Console.WriteLine("---");
+                }
+            }
+        }
+
         private bool SetSerialPort()
         {
             Console.Write("포트 번호를 입력하세요: COM");
             int.TryParse(Console.ReadLine(), out int portNum);
+
+            Console.Write("전송 간격을 입력하세요(50ms 이상): ");
+            int.TryParse(Console.ReadLine(), out int interval);
+            this.interval = interval;
 
             SerialPort.PortName = "COM" + portNum;
             SerialPort.BaudRate = 9600;
