@@ -19,9 +19,10 @@ namespace TemHum
     class TemHum
     {
         private static SerialPort SerialPort;
+        private readonly object lockObject = new object();
         public bool isOpen { get; private set; }
         public int interval { get; set; } = 50;
-        
+
         public void OpenSerial()
         {
             SerialPort = new SerialPort();
@@ -36,8 +37,7 @@ namespace TemHum
                 if (isOpen)
                 {
                     var ReadDataTimer = new System.Timers.Timer();
-                    ReadDataTimer.Interval = interval;
-                    //ReadDataTimer.Elapsed += new System.Timers.ElapsedEventHandler(ReadDataEvent);
+                    ReadDataTimer.Interval = interval;                   
                     ReadDataTimer.Elapsed += ReadDataEvent;
                     ReadDataTimer.Start();
                 }
@@ -55,20 +55,23 @@ namespace TemHum
         
         public void ReadDataEvent(object sender, EventArgs e)
         {
-            isOpen = SerialPort.IsOpen;
-            if (isOpen)
-            {                
-                string sendMsg = ":80040004000375\r\n";
-                SerialPort.Write(sendMsg);
-                Thread.Sleep(50);
-                string data = SerialPort.ReadExisting();
-                if (data != string.Empty)
+            lock (lockObject)
+            {
+                isOpen = SerialPort.IsOpen;
+                if (isOpen)
                 {
-                    PrintTemHum(data);
-                }
-                else
-                {
-                    Console.WriteLine("---");
+                    string sendMsg = ":80040004000375\r\n";
+                    SerialPort.Write(sendMsg);
+                    Thread.Sleep(50);
+                    string data = SerialPort.ReadExisting();
+                    if (data != string.Empty)
+                    {
+                        PrintTemHum(data);
+                    }
+                    else
+                    {
+                        Console.WriteLine("---");
+                    }
                 }
             }
         }
@@ -78,7 +81,7 @@ namespace TemHum
             Console.Write("포트 번호를 입력하세요: COM");
             int.TryParse(Console.ReadLine(), out int portNum);
 
-            Console.Write("전송 간격을 입력하세요(50ms 이상): ");
+            Console.Write("전송 간격을 입력하세요: ");
             int.TryParse(Console.ReadLine(), out int interval);
             this.interval = interval;
 
